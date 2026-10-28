@@ -16,10 +16,11 @@ procesos-estocasticos-markov/
 ├── README.md
 ├── markov-clima/
 │   ├── requirements.txt
+│   ├── data.json                 # Datos locales estáticos de precipitación (1,096 días)
 │   ├── app/
 │   │   ├── core/                 # Motor de Markov y discretización
 │   │   ├── database/             # Esquema y caché SQLite
-│   │   ├── services/             # Cliente API Open-Meteo
+│   │   ├── services/             # Carga estática y cliente API Open-Meteo
 │   │   └── ui/                   # app.py y componentes visuales Plotly
 │   └── tests/                    # Pruebas unitarias (pytest)
 └── markov-cripto/
