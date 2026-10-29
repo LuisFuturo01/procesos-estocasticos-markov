@@ -110,7 +110,7 @@ def _header(res, dom: Domain):
     for i in range(k):
         cols[i + 1].metric(
             f"π{i + 1} · {dom.short[i]}", pct(pi[i]),
-            f"vuelve cada μ{i + 1} = {fmt_time(mu[i])} {dom.steps}", delta_color="off", border=True,
+            f"μ{i + 1} = {fmt_time(mu[i])} {dom.steps}", delta_color="off", border=True,
             help=f"Fracción del tiempo a largo plazo en {dom.labels[i]} (π{i + 1}) y "
                  f"tiempo medio de retorno μ{i + 1} = 1/π{i + 1}.")
 

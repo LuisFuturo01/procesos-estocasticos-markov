@@ -125,7 +125,7 @@ def data_view():
     chart(fig, title="Distribución de retornos y cortes de discretización", height=300, showlegend=False)
     cnt = np.bincount(states, minlength=3)
     if cnt.min() < 10:
-        st.warning(f"El estado {LABELS[int(cnt.argmin())]} tiene solo {cnt.min()} días: su fila de P "
+        st.warning(f"El estado {LABELS[int(cnt.argmin())]} tiene solo {cnt.min()} día{"s" if cnt.min() != 1 else ""}: su fila de P "
                    "será poco confiable. Prueba umbrales por **Volatilidad** o **Terciles**.")
 
 
