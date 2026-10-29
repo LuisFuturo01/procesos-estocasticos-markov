@@ -80,12 +80,21 @@ def load_static_precipitation(start: str | None = None, end: str | None = None) 
     return df.dropna().reset_index(drop=True)
 
 
-def get_precipitation(lat: float, lon: float, start: str, end: str, force: bool = False, use_static: bool = False) -> pd.DataFrame:
-    """DataFrame [date, value] con precipitación diaria (mm) entre start y end (YYYY-MM-DD)."""
+def get_precipitation(lat: float, lon: float, start: str, end: str, force: bool = False,
+                      use_static: bool = False, static_fallback: bool = False) -> pd.DataFrame:
+    """DataFrame [date, value] con precipitación diaria (mm) entre start y end (YYYY-MM-DD).
+
+    df.attrs["source"] indica de dónde salieron los datos: "static", "api",
+    "cache" o "static-fallback" (la API falló y se usó data.json; solo se
+    permite con static_fallback=True, porque data.json es únicamente de La Paz).
+    """
     if use_static and has_static_data():
-        return load_static_precipitation(start, end)
+        df = load_static_precipitation(start, end)
+        df.attrs["source"] = "static"
+        return df
 
     key = f"clima:{lat:.2f}:{lon:.2f}"
+    source = "cache"
     if force or not cache.covers(key, start, end):
         try:
             r = requests.get(URL, timeout=30, params={
@@ -95,9 +104,19 @@ def get_precipitation(lat: float, lon: float, start: str, end: str, force: bool 
             d = r.json()["daily"]
             df = pd.DataFrame({"date": d["time"], "value": d["precipitation_sum"]})
             cache.save(key, df, start, end)
+            source = "api"
         except Exception:
-            # Fallback a datos estáticos si la API falla y el archivo existe
-            if has_static_data():
-                return load_static_precipitation(start, end)
+            if static_fallback and has_static_data():
+                df = load_static_precipitation(start, end)
+                df.attrs["source"] = "static-fallback"
+                return df
             raise
-    return cache.load(key, start, end).dropna()
+    df = cache.load(key, start, end).dropna().reset_index(drop=True)
+    df.attrs["source"] = source
+    return df
+
+
+def consecutive_mask(dates) -> list[bool]:
+    """valid[t] = True si dates[t+1] es exactamente el día siguiente a dates[t]."""
+    d = pd.to_datetime(pd.Series(dates)).reset_index(drop=True)
+    return (d.diff().dt.days.iloc[1:] == 1).tolist()
